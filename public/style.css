@@ -1,0 +1,57 @@
+/* Style the whole page body
+   中文：设置整个页面主体的样式 */
+body {
+    font-family: Arial, sans-serif;  /* Use Arial font / 中文：使用 Arial 字体 */
+    background-color: #f9fafb;       /* Light gray background / 中文：浅灰色背景 */
+    text-align: center;              /* Center all text / 中文：所有文字居中对齐 */
+}
+
+/* The white card that holds the form and the list
+   中文：承载表单和来宾列表的白色卡片容器 */
+.container {
+    max-width: 500px;                            /* Limit card width / 中文：限制卡片最大宽度 */
+    margin: 40px auto;                           /* Center horizontally (auto) / 中文：左右 auto 实现水平居中 */
+    padding: 20px;                               /* Inner spacing / 中文：内边距 */
+    background: white;                           /* White card / 中文：白色背景 */
+    border-radius: 8px;                          /* Rounded corners / 中文：圆角 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);    /* Subtle shadow / 中文：淡淡的阴影，制造悬浮感 */
+}
+
+/* Text input box where the guest name is typed
+   中文：输入来宾姓名的文本框 */
+input[type="text"] {
+    padding: 10px;              /* Inner spacing / 中文：内边距 */
+    width: 60%;                 /* Relative width / 中文：相对父容器 60% 的宽度 */
+    border: 1px solid #ccc;     /* Light gray border / 中文：浅灰色边框 */
+    border-radius: 4px;         /* Slightly rounded / 中文：轻微圆角 */
+}
+
+/* The "Add Guest" submit button
+   中文：“Add Guest（添加来宾）”提交按钮 */
+button {
+    padding: 10px 15px;         /* 10px top/bottom, 15px left/right / 中文：上下 10px、左右 15px 内边距 */
+    background: #007bff;        /* Bootstrap blue / 中文：蓝色背景 */
+    color: white;               /* White text / 中文：白色文字 */
+    border: none;               /* Remove default border / 中文：去掉默认边框 */
+    border-radius: 4px;         /* Rounded corners / 中文：圆角 */
+    cursor: pointer;            /* Show hand cursor / 中文：鼠标悬停显示手型指针 */
+}
+
+/* Unordered list of registered guests
+   中文：已登记来宾的无序列表 */
+ul {
+    list-style-type: none;      /* Remove bullet points / 中文：去掉圆点项目符号 */
+    padding: 0;                 /* Remove default indentation / 中文：清除默认缩进 */
+    margin-top: 20px;           /* Space above the list / 中文：列表上方留 20px 间距 */
+}
+
+/* Each individual guest name
+   中文：每一条来宾姓名 */
+li {
+    background: #e2e8f0;        /* Light gray-blue chip / 中文：浅灰蓝色底色 */
+    margin: 5px 0;              /* Vertical gap between items / 中文：列表项之间上下间距 5px */
+    padding: 10px;              /* Inner spacing / 中文：内边距 */
+    border-radius: 4px;         /* Rounded corners / 中文：圆角 */
+    font-weight: bold;          /* Bold name / 中文：姓名加粗 */
+    color: #333;                /* Dark gray text / 中文：深灰色文字 */
+}

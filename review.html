@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz 1 · F26 Solution 复习笔记 | server.js &amp; style.css 中英对照</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --ink:#1f2937;
+    --ink-soft:#6b7280;
+    --line:#e5e7eb;
+    --brand:#4f46e5;
+    --brand-soft:#eef2ff;
+    --zh:#0284c7;
+    --code-bg:#0f172a;
+    --code-ink:#e2e8f0;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+                "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+    line-height:1.6;
+  }
+
+  /* ---------- Header ---------- */
+  .topbar{
+    background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 55%,#0ea5e9 100%);
+    color:#fff;
+    padding:26px 20px 22px;
+  }
+  .topbar-inner{max-width:1180px;margin:0 auto;}
+  .topbar h1{margin:0;font-size:1.5rem;letter-spacing:.2px;}
+  .topbar .sub{margin:6px 0 0;font-size:.92rem;opacity:.92;}
+  .topbar .sub-en{margin:2px 0 0;font-size:.82rem;opacity:.8;}
+  .toolbar{
+    margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  }
+  .btn{
+    appearance:none;border:1px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.14);color:#fff;
+    padding:7px 14px;border-radius:999px;font-size:.85rem;cursor:pointer;
+    transition:background .15s ease, transform .05s ease;
+  }
+  .btn:hover{background:rgba(255,255,255,.26);}
+  .btn:active{transform:translateY(1px);}
+  .btn[aria-pressed="false"]{opacity:.55;}
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  }
+  .tabs-inner{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:0 12px;}
+  .tab{
+    appearance:none;background:none;border:none;border-bottom:3px solid transparent;
+    padding:13px 16px;font-size:.92rem;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+    font-weight:600;
+  }
+  .tab:hover{color:var(--ink);}
+  .tab[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand);}
+
+  /* ---------- Layout ---------- */
+  main{max-width:1180px;margin:0 auto;padding:24px 16px 60px;}
+  .panel{display:none;animation:fade .18s ease;}
+  .panel.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .intro{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin-bottom:20px;
+  }
+  .intro h2{margin:0 0 6px;font-size:1.05rem;}
+  .intro p{margin:4px 0;color:var(--ink-soft);font-size:.92rem;}
+  .badge{
+    display:inline-block;background:var(--brand-soft);color:var(--brand);
+    font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:6px;
+  }
+
+  /* ---------- Code card ---------- */
+  .code-card{
+    background:var(--code-bg);border-radius:14px;overflow:hidden;
+    box-shadow:0 10px 30px rgba(15,23,42,.22);margin-bottom:26px;
+  }
+  .code-head{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:11px 14px;background:#111c33;border-bottom:1px solid #1e293b;
+  }
+  .dots{display:flex;gap:6px;}
+  .dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .dots i:nth-child(1){background:#ff5f57;}
+  .dots i:nth-child(2){background:#febc2e;}
+  .dots i:nth-child(3){background:#28c840;}
+  .code-head .fname{color:#e2e8f0;font-family:var(--mono);font-size:.86rem;font-weight:600;}
+  .code-head .fpath{color:#7c8aa5;font-family:var(--mono);font-size:.76rem;}
+  .code-head .spacer{flex:1;}
+  .code-head .copy{
+    appearance:none;border:1px solid #334155;background:#1e293b;color:#cbd5e1;
+    font-size:.76rem;padding:4px 11px;border-radius:6px;cursor:pointer;
+  }
+  .code-head .copy:hover{background:#334155;color:#fff;}
+
+  .code-body{overflow-x:auto;padding:12px 0 16px;}
+  .row{display:grid;grid-template-columns:52px 1fr;align-items:baseline;}
+  .row:hover{background:rgba(148,163,184,.07);}
+  .ln{
+    color:#475569;text-align:right;padding-right:14px;font-family:var(--mono);
+    font-size:11.5px;user-select:none;
+  }
+  .lc{
+    font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--code-ink);
+    white-space:pre;padding-right:20px;
+  }
+  .row.zh{background:rgba(2,132,199,.10);}
+  .row.zh .ln{color:#38bdf8;}
+  .zc{
+    font-size:12.8px;line-height:1.7;color:#7dd3fc;white-space:pre-wrap;
+    padding:1px 20px 1px 12px;border-left:3px solid #38bdf8;
+  }
+  body.hide-zh .row.zh{display:none;}
+
+  /* token colors */
+  .t-com{color:#7c8aa5;font-style:italic;}
+  .t-str{color:#fbbf24;}
+  .t-exp{color:#f472b6;}
+  .t-kw{color:#c084fc;}
+  .t-num{color:#fca5a5;}
+  .t-tag{color:#38bdf8;}
+  .t-sel{color:#fbbf24;}
+  .t-prop{color:#7dd3fc;}
+
+  /* ---------- Notes ---------- */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+  .note{
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brand);
+    border-radius:12px;padding:14px 16px;
+  }
+  .note h3{margin:0 0 6px;font-size:.98rem;}
+  .note .en{font-size:.86rem;color:var(--ink-soft);margin:0 0 6px;}
+  .note .cn{font-size:.92rem;margin:0;}
+  .note code{
+    font-family:var(--mono);background:#f1f5f9;color:#be123c;
+    padding:1px 5px;border-radius:4px;font-size:.84rem;
+  }
+
+  table.cheat{width:100%;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.9rem;}
+  table.cheat th,table.cheat td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top;}
+  table.cheat th{background:#f8fafc;font-size:.84rem;color:var(--ink-soft);}
+  table.cheat tr:last-child td{border-bottom:none;}
+  table.cheat td code{font-family:var(--mono);font-size:.82rem;background:#f1f5f9;padding:1px 5px;border-radius:4px;}
+
+  pre.plain{
+    background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+    font-size:13px;padding:16px;border-radius:12px;overflow-x:auto;margin:0 0 14px;
+  }
+  pre.plain .c{color:#7c8aa5;}
+
+  .warn{
+    background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;
+    border-radius:10px;padding:12px 14px;font-size:.9rem;margin:14px 0 0;
+  }
+
+  footer{
+    border-top:1px solid var(--line);background:#fff;padding:18px 16px;
+    color:var(--ink-soft);font-size:.82rem;text-align:center;
+  }
+
+  @media (max-width:640px){
+    .row{grid-template-columns:38px 1fr;}
+    .lc{font-size:12px;}
+    .zc{font-size:12px;}
+    .topbar h1{font-size:1.2rem;}
+  }
+</style>
+</head>
+<body class="">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>Quiz 1 · F26 Solution 复习笔记 <span class="badge">EN ⇄ 中文</span></h1>
+    <p class="sub">server.js 与 style.css 全部内容 · 逐行中英对照</p>
+    <p class="sub-en">CSIS 3380 — Full Stack Development with JavaScript · Guest List App</p>
+    <div class="toolbar">
+      <button class="btn" id="toggle-zh" aria-pressed="true">中文对照：开 / Chinese: ON</button>
+      <button class="btn" id="copy-all">复制当前文件 / Copy file</button>
+      <button class="btn" id="print-btn">打印 / Print</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab" data-target="panel-serverjs" aria-selected="true">server.js</button>
+    <button class="tab" data-target="panel-css" aria-selected="false">style.css</button>
+    <button class="tab" data-target="panel-notes" aria-selected="false">核心知识点 / Key Concepts</button>
+    <button class="tab" data-target="panel-run" aria-selected="false">运行说明 / How to Run</button>
+  </div>
+</nav>
+
+<main>
+
+  <div class="intro">
+    <h2>这个应用在做什么？<span class="badge">What it does</span></h2>
+    <p><b>EN:</b> A tiny Express app. <code>GET /</code> renders a guest-list page from an in-memory array;
+       <code>POST /</code> receives the form, pushes the name into the array, then redirects back to <code>/</code>.</p>
+    <p><b>中文：</b>一个极简 Express 应用。<code>GET /</code> 用内存数组渲染来宾名单页面；
+       <code>POST /</code> 接收表单、把姓名存入数组，再重定向回 <code>/</code>。</p>
+    <p style="font-size:.85rem;">蓝色行 = 该行代码/注释的中文翻译或补充说明。点击右上角 <b>中文对照</b> 可切换显示。</p>
+  </div>
+
+  <!-- ================= panel: server.js ================= -->
+  <section id="panel-serverjs" class="panel active">
+    <div class="code-card">
+      <div class="code-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="fname">server.js</span>
+        <span class="fpath">quiz1-f26_solution/server.js</span>
+        <span class="spacer"></span>
+        <button class="copy" data-copy="serverjs">复制 / Copy</button>
+      </div>
+      <div class="code-body" id="body-serverjs"></div>
+    </div>
+  </section>
+
+  <!-- ================= panel: style.css ================= -->
+  <section id="panel-css" class="panel">
+    <div class="code-card">
+      <div class="code-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="fname">style.css</span>
+        <span class="fpath">quiz1-f26_solution/public/style.css</span>
+        <span class="spacer"></span>
+        <button class="copy" data-copy="css">复制 / Copy</button>
+      </div>
+      <div class="code-body" id="body-css"></div>
+    </div>
+  </section>
+
+  <!-- ================= panel: notes ================= -->
+  <section id="panel-notes" class="panel">
+    <div class="grid2">
+
+      <div class="note">
+        <h3>1. 静态文件中间件 <span class="badge">Static files</span></h3>
+        <p class="en"><code>express.static(path.join(__dirname,'public'))</code> maps the <code>public</code> folder to the site root, so <code>/style.css</code> is served automatically.</p>
+        <p class="cn">把 <code>public</code> 目录映射为网站根目录，所以 HTML 里写 <code>href="/style.css"</code> 就能直接取到文件，无需额外路由。</p>
+      </div>
+
+      <div class="note">
+        <h3>2. 表单解析中间件 <span class="badge">Body parser</span></h3>
+        <p class="en"><code>express.urlencoded({extended:false})</code> parses <code>application/x-www-form-urlencoded</code> bodies into <code>req.body</code>.</p>
+        <p class="cn">解析表单请求体并填充 <code>req.body</code>。没有它，<code>req.body.guestName</code> 就是 <code>undefined</code>。</p>
+      </div>
+
+      <div class="note">
+        <h3>3. 顺序很重要 <span class="badge">Order matters</span></h3>
+        <p class="en">Middleware must be registered <b>before</b> the routes that need it. Requests travel through the stack top-to-bottom.</p>
+        <p class="cn">中间件必须写在需要它的路由<b>之前</b>。请求按注册顺序自上而下依次经过，顺序写错就会失效。</p>
+      </div>
+
+      <div class="note">
+        <h3>4. 内存“数据库” <span class="badge">In-memory store</span></h3>
+        <p class="en"><code>const guests = []</code> is just an array in RAM. Data disappears whenever the server restarts.</p>
+        <p class="cn"><code>const guests = []</code> 只是内存里的数组，服务器重启后数据全部丢失（不是真正的持久化数据库）。</p>
+      </div>
+
+      <div class="note">
+        <h3>5. 模板字符串渲染 <span class="badge">Template literal</span></h3>
+        <p class="en">Back-tick strings <code>`...${value}...`</code> let you build multi-line HTML and inject JavaScript values.</p>
+        <p class="cn">用反引号 <code>`...${变量}...`</code> 拼多行 HTML，并在 <code>${}</code> 中插入动态数据，比字符串 <code>+</code> 拼接清爽得多。</p>
+      </div>
+
+      <div class="note">
+        <h3>6. map + join 套路 <span class="badge">Array → HTML</span></h3>
+        <p class="en"><code>guests.map(n =&gt; `&lt;li&gt;${n}&lt;/li&gt;`).join('')</code> turns an array into one HTML string.</p>
+        <p class="cn"><code>map()</code> 把每个元素变成一段 HTML，<code>join('')</code> 再把数组合并成一个整体字符串（用空字符串作分隔符，避免出现逗号）。</p>
+      </div>
+
+      <div class="note">
+        <h3>7. PRG 重定向 <span class="badge">Post/Redirect/Get</span></h3>
+        <p class="en"><code>res.redirect('/')</code> sends the browser back with a GET, so refreshing the page does not re-submit the form.</p>
+        <p class="cn"><code>res.redirect('/')</code> 让浏览器重新发起 GET 请求，刷新页面不会重复提交表单，也不会出现“确认重新提交”提示。</p>
+      </div>
+
+      <div class="note">
+        <h3>8. 居中卡片三件套 <span class="badge">CSS centering</span></h3>
+        <p class="en"><code>max-width</code> + <code>margin: 40px auto</code> + <code>padding</code> = a centred, readable white card.</p>
+        <p class="cn"><code>max-width</code> 限制宽度、<code>margin: 40px auto</code> 实现水平居中、<code>padding</code> 留白，三者组合出居中的白色卡片。</p>
+      </div>
+
+      <div class="note">
+        <h3>9. name 属性是桥梁 <span class="badge">name ↔ req.body</span></h3>
+        <p class="en">The input's <code>name="guestName"</code> becomes the key <code>req.body.guestName</code> on the server.</p>
+        <p class="cn">表单控件的 <code>name="guestName"</code> 决定了后端用 <code>req.body.guestName</code> 取值，两者必须完全一致。</p>
+      </div>
+
+      <div class="note">
+        <h3>10. 安全提醒 <span class="badge">XSS</span></h3>
+        <p class="en">User input is injected straight into HTML here, so a name like <code>&lt;script&gt;</code> would execute. Escape output in real apps.</p>
+        <p class="cn">这里直接把用户输入插进 HTML，若输入 <code>&lt;script&gt;</code> 会被执行（XSS）。真实项目必须对输出做转义。</p>
+      </div>
+
+    </div>
+
+    <h2 style="margin:26px 0 10px;font-size:1.05rem;">速查表 / Cheat sheet</h2>
+    <table class="cheat">
+      <thead>
+        <tr><th>概念 Concept</th><th>English</th><th>中文</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>require('express')</code></td><td>Import the Express framework</td><td>引入 Express 框架</td></tr>
+        <tr><td><code>__dirname</code></td><td>Absolute path of the current file's folder</td><td>当前文件所在目录的绝对路径</td></tr>
+        <tr><td><code>app.use()</code></td><td>Register middleware for every request</td><td>注册中间件，对所有请求生效</td></tr>
+        <tr><td><code>app.get('/', h)</code></td><td>Handle GET requests to "/"</td><td>处理访问首页的 GET 请求</td></tr>
+        <tr><td><code>app.post('/', h)</code></td><td>Handle POST requests to "/"</td><td>处理提交到首页的 POST 请求</td></tr>
+        <tr><td><code>req.body</code></td><td>Parsed form data</td><td>解析后的表单数据</td></tr>
+        <tr><td><code>res.send()</code></td><td>Send a response body</td><td>发送响应内容</td></tr>
+        <tr><td><code>res.redirect()</code></td><td>Send a 302 redirect</td><td>发送 302 重定向</td></tr>
+        <tr><td><code>app.listen()</code></td><td>Start the server on a port</td><td>启动服务器并监听端口</td></tr>
+        <tr><td><code>list-style-type:none</code></td><td>Hide list bullets</td><td>隐藏列表圆点</td></tr>
+        <tr><td><code>box-shadow</code></td><td>Drop shadow around a box</td><td>给元素加阴影</td></tr>
+        <tr><td><code>border-radius</code></td><td>Round the corners</td><td>设置圆角</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn">
+      <b>考试提醒 / Exam tip：</b>先写中间件（<code>express.static</code>、<code>express.urlencoded</code>），再写路由；
+      POST 处理完一定要 <code>res.redirect()</code> 或 <code>res.send()</code>，否则浏览器会一直转圈。
+    </div>
+  </section>
+
+  <!-- ================= panel: run ================= -->
+  <section id="panel-run" class="panel">
+    <h2 style="margin:0 0 10px;font-size:1.05rem;">1. 安装依赖 / Install</h2>
+    <pre class="plain"><span class="c"># 进入项目目录 / go into the project folder</span>
+cd quiz1-f26_solution
+
+<span class="c"># 安装 Express（若父目录已装过可跳过 / skip if already installed）</span>
+npm install express</pre>
+
+    <h2 style="margin:20px 0 10px;font-size:1.05rem;">2. 启动服务器 / Start</h2>
+    <pre class="plain">node server.js
+
+<span class="c"># 终端输出 / terminal output:</span>
+<span class="c"># Server running at http://localhost:3000</span></pre>
+
+    <h2 style="margin:20px 0 10px;font-size:1.05rem;">3. 访问 / Open</h2>
+    <p>浏览器打开 <code>http://localhost:3000</code>：输入姓名 → 点 <b>Add Guest</b> → 页面刷新后名单里多出一条。</p>
+    <p style="color:var(--ink-soft);">In your browser open <code>http://localhost:3000</code>, type a name, press <b>Add Guest</b>, and the list grows after the redirect.</p>
+
+    <h2 style="margin:20px 0 10px;font-size:1.05rem;">4. 文件结构 / Structure</h2>
+    <pre class="plain">quiz1-f26_solution/
+├── server.js          <span class="c"># Express 服务器 / the Express server</span>
+├── package.json       <span class="c"># 项目配置与依赖 / project manifest</span>
+├── review.html        <span class="c"># 本复习网页 / this review page</span>
+└── public/
+    └── style.css      <span class="c"># 样式表（静态文件）/ stylesheet (static asset)</span></pre>
+
+    <div class="warn">
+      <b>注意 / Note：</b><code>guests</code> 数组保存在内存中，按 <code>Ctrl + C</code> 停止服务器后数据即清空。
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  CSIS 3380 · Quiz 1 (F26) Solution Review · server.js &amp; style.css 中英对照复习笔记
+</footer>
+
+<!-- ============ SOURCE: server.js ============ -->
+<script type="text/plain" id="src-serverjs">
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const PORT = 3000;
+
+// Serve static files from the 'public' directory
+// 中文：从 'public' 目录提供静态文件服务（例如 style.css）
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Our 'database' for this exercise
+// 中文：本次练习用的“数据库”（其实只是内存中的一个数组，服务器重启后数据会清空）
+const guests = [];
+
+// Middleware to parse URL-encoded form bodies
+// 中文：中间件，用于解析 URL-encoded 格式的表单请求体（这样 req.body 才有值）
+app.use(express.urlencoded({ extended: false }));
+
+app.get('/', (req, res) => {
+// Convert array of names into array of <li> elements, then join them into one long string
+// 中文：把姓名数组转换成 <li> 元素数组，再用 join('') 拼接成一个完整的字符串
+  const guestListItems = guests.map(name => `<li>${name}</li>`).join('');
+
+    const html = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Event Guest List</title>
+        <link rel="stylesheet" href="/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Event Guest List</h1>
+            <form method="POST" action="/">
+                <input type="text" name="guestName" placeholder="Name" required>
+                <button type="submit">Add Guest</button>
+            </form>
+            <h2>Guests Registered:</h2>
+            <ul>
+                <!-- DYNAMIC LIST ITEMS GO HERE -->
+                <!-- 中文：动态生成的列表项会插入到这里（由 guestListItems 变量填充） -->
+                ${guestListItems}
+            </ul>
+        </div>
+    </body>
+    </html>
+  `;
+  res.send(html);
+});
+
+app.post('/', (req, res) => {
+  // Extract the name from the parsed form body
+  // 中文：从解析后的表单请求体中取出姓名字段
+  const newGuest = req.body.guestName;
+
+  // Simple validation to avoid empty strings
+  // 中文：简单校验，避免把空字符串加入数组
+  if (newGuest && newGuest.trim() !== '') {
+    guests.push(newGuest.trim());
+  }
+
+  // Redirect back to the home page to re-render with the new data
+  // 中文：重定向回首页，用新的数据重新渲染页面（POST → 重定向 → GET，即 PRG 模式）
+  res.redirect('/');
+});
+
+
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+</script>
+
+<!-- ============ CHINESE: server.js (line-by-line) ============ -->
+<script type="text/plain" id="zh-serverjs">
+引入 Express 框架模块，存到常量 express 中
+引入 Node 内置 path 模块，用来拼接文件路径
+
+调用 express() 创建应用实例 app
+定义服务器监听的端口号 3000
+
+中文：从 'public' 目录提供静态文件服务（例如 style.css）
+
+注册静态文件中间件：把 public 目录映射为网站根目录，访问 /style.css 会直接返回该文件
+
+中文：本次练习用的“数据库”
+
+用空数组 guests 充当临时“数据库”，保存所有来宾姓名（进程重启后数据会丢失）
+
+中文：中间件，用于解析 URL-encoded 格式的表单请求体
+
+注册表单解析中间件，之后 req.body 才有值；extended: false 表示使用 querystring 简单解析
+
+定义 GET / 路由：访问首页时返回渲染好的 HTML
+中文：把姓名数组转换成 <li> 元素数组，再用 join('') 拼接成一个完整的字符串
+
+map() 把每个姓名变成 <li>…</li>，再用 join('') 合并成一整段 HTML；注意这里没有转义输入，实际项目有 XSS 风险
+
+用反引号模板字符串定义整页 HTML，${} 中可以插入动态数据
+HTML 文档开始，语言声明为英文
+文档头部开始：存放元信息和外部资源引用
+声明 UTF-8 编码，保证中文等字符不乱码
+浏览器标签页上显示的标题
+引用外部样式表，/style.css 由上面的静态文件中间件提供
+文档头部结束
+文档主体开始
+内容容器开始，对应 CSS 里的 .container 白色卡片
+一级标题：活动来宾名单
+表单开始：以 POST 方法提交到 / 路由
+文本输入框；name="guestName" 决定后端用 req.body.guestName 取值，required 表示必填
+提交按钮，type="submit" 会触发表单提交
+表单结束
+二级标题：已登记来宾
+无序列表开始
+中文：动态生成的列表项会插入到这里
+
+模板字符串的插值位置，运行时被替换成所有 <li> 元素
+无序列表结束
+内容容器结束
+文档主体结束
+HTML 文档结束
+模板字符串结束（反引号 + 分号）
+把拼好的 HTML 字符串作为响应体发送给浏览器
+GET / 路由处理函数结束
+
+定义 POST / 路由：处理表单提交
+中文：从解析后的表单请求体中取出姓名字段
+
+从 req.body 里读取 name="guestName" 输入框的值
+
+中文：简单校验，避免把空字符串加入数组
+
+校验条件：newGuest 存在，且去掉首尾空格后不是空字符串
+通过校验后，把去掉首尾空格的姓名加入 guests 数组
+校验块结束
+
+中文：重定向回首页，用新的数据重新渲染页面
+
+302 重定向回首页，浏览器会再发一次 GET 请求（PRG 模式），避免刷新时重复提交表单
+POST / 路由处理函数结束
+
+
+
+启动服务器，监听 PORT 端口
+启动成功后在终端打印访问地址
+启动回调结束
+</script>
+
+<!-- ============ SOURCE: style.css ============ -->
+<script type="text/plain" id="src-css">
+/* Style the whole page body
+   中文：设置整个页面主体的样式 */
+body {
+    font-family: Arial, sans-serif;  /* Use Arial font / 中文：使用 Arial 字体 */
+    background-color: #f9fafb;       /* Light gray background / 中文：浅灰色背景 */
+    text-align: center;              /* Center all text / 中文：所有文字居中对齐 */
+}
+
+/* The white card that holds the form and the list
+   中文：承载表单和来宾列表的白色卡片容器 */
+.container {
+    max-width: 500px;                            /* Limit card width / 中文：限制卡片最大宽度 */
+    margin: 40px auto;                           /* Center horizontally (auto) / 中文：左右 auto 实现水平居中 */
+    padding: 20px;                               /* Inner spacing / 中文：内边距 */
+    background: white;                           /* White card / 中文：白色背景 */
+    border-radius: 8px;                          /* Rounded corners / 中文：圆角 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);    /* Subtle shadow / 中文：淡淡的阴影，制造悬浮感 */
+}
+
+/* Text input box where the guest name is typed
+   中文：输入来宾姓名的文本框 */
+input[type="text"] {
+    padding: 10px;              /* Inner spacing / 中文：内边距 */
+    width: 60%;                 /* Relative width / 中文：相对父容器 60% 的宽度 */
+    border: 1px solid #ccc;     /* Light gray border / 中文：浅灰色边框 */
+    border-radius: 4px;         /* Slightly rounded / 中文：轻微圆角 */
+}
+
+/* The "Add Guest" submit button
+   中文：“Add Guest（添加来宾）”提交按钮 */
+button {
+    padding: 10px 15px;         /* 10px top/bottom, 15px left/right / 中文：上下 10px、左右 15px 内边距 */
+    background: #007bff;        /* Bootstrap blue / 中文：蓝色背景 */
+    color: white;               /* White text / 中文：白色文字 */
+    border: none;               /* Remove default border / 中文：去掉默认边框 */
+    border-radius: 4px;         /* Rounded corners / 中文：圆角 */
+    cursor: pointer;            /* Show hand cursor / 中文：鼠标悬停显示手型指针 */
+}
+
+/* Unordered list of registered guests
+   中文：已登记来宾的无序列表 */
+ul {
+    list-style-type: none;      /* Remove bullet points / 中文：去掉圆点项目符号 */
+    padding: 0;                 /* Remove default indentation / 中文：清除默认缩进 */
+    margin-top: 20px;           /* Space above the list / 中文：列表上方留 20px 间距 */
+}
+
+/* Each individual guest name
+   中文：每一条来宾姓名 */
+li {
+    background: #e2e8f0;        /* Light gray-blue chip / 中文：浅灰蓝色底色 */
+    margin: 5px 0;              /* Vertical gap between items / 中文：列表项之间上下间距 5px */
+    padding: 10px;              /* Inner spacing / 中文：内边距 */
+    border-radius: 4px;         /* Rounded corners / 中文：圆角 */
+    font-weight: bold;          /* Bold name / 中文：姓名加粗 */
+    color: #333;                /* Dark gray text / 中文：深灰色文字 */
+}
+</script>
+
+<!-- ============ CHINESE: style.css (line-by-line) ============ -->
+<script type="text/plain" id="zh-css">
+
+
+选择器：选中整个页面的 <body> 元素
+优先使用 Arial 字体，找不到则回退到系统默认无衬线字体
+页面背景色设为极浅的灰白色 #f9fafb
+页面文字居中对齐，子元素会继承
+规则块结束
+
+
+
+类选择器：选中 class="container" 的卡片容器
+最大宽度 500px，超过后不再变宽
+上下外边距 40px、左右 auto，左右 auto 实现水平居中
+内容与边框之间留 20px 内边距
+卡片背景为白色
+四个角 8px 圆角
+阴影：水平偏移 0、垂直 4px、模糊 6px、黑色 10% 透明度
+规则块结束
+
+
+
+属性选择器：只选中 type="text" 的输入框
+输入框内边距 10px
+宽度为父容器的 60%
+1px 实线浅灰色边框
+4px 圆角
+规则块结束
+
+
+
+元素选择器：选中页面上的按钮
+上下内边距 10px、左右 15px
+按钮背景为蓝色 #007bff
+按钮文字为白色
+去掉浏览器默认边框
+4px 圆角
+鼠标悬停时显示手型光标，提示可点击
+规则块结束
+
+
+
+元素选择器：选中来宾列表
+去掉列表项前面的圆点符号
+清除浏览器默认的左侧缩进
+列表与上方内容之间留 20px 间距
+规则块结束
+
+
+
+元素选择器：选中每一条来宾
+每条来宾使用浅灰蓝色底色
+条目之间上下间距 5px、左右 0
+内边距 10px
+4px 圆角
+姓名加粗显示
+文字颜色为深灰色 #333
+规则块结束
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  var JS_RE = /(?<str>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?<exp>\$\{[^}]*\})|(?<tag>&lt;\/?[a-zA-Z][\w-]*)|(?<kw>\b(?:const|let|var|function|return|if|else|for|while|require|module|new|class|typeof|null|true|false)\b)|(?<num>\b\d+\b)/g;
+
+  var CSS_RE = /(?<com>\/\*[\s\S]*?\*\/)|(?<sel>^[\s@]*[#.]?[\w\[\]="':.\-]+(?=\s*\{))|(?<prop>[-a-zA-Z]+)(?=\s*:)|(?<hex>#[0-9a-fA-F]{3,8}\b)|(?<num>\b-?\d*\.?\d+(?:px|%|em|rem|vh|vw|s|deg)?\b)/g;
+
+  function wrap(cls, text) { return '<span class="' + cls + '">' + text + '</span>'; }
+
+  function hlJS(line) {
+    var t = esc(line);
+    var trim = t.trim();
+    if (trim.indexOf('//') === 0 || trim.indexOf('&lt;!--') === 0) return wrap('t-com', t);
+    return t.replace(JS_RE, function (m, pStr, pExp, pTag, pKw, pNum) {
+      if (pStr !== undefined) return wrap('t-str', m);
+      if (pExp !== undefined) return wrap('t-exp', m);
+      if (pTag !== undefined) return wrap('t-tag', m);
+      if (pKw !== undefined) return wrap('t-kw', m);
+      if (pNum !== undefined) return wrap('t-num', m);
+      return m;
+    });
+  }
+
+  function hlCSS(line) {
+    var t = esc(line);
+    var trim = line.trim();
+    var open = trim.indexOf('/*');
+    var close = trim.indexOf('*/');
+    // whole-line comment: starts with /* , continues with * , or only closes a comment
+    if (open === 0 || trim.charAt(0) === '*' || (close !== -1 && open === -1)) {
+      return wrap('t-com', t);
+    }
+    return t.replace(CSS_RE, function () {
+      var m = arguments[0];
+      var g = arguments[arguments.length - 1];
+      if (!g) return m;
+      if (g.com) return wrap('t-com', m);
+      if (g.sel) return wrap('t-sel', m);
+      if (g.prop) return wrap('t-prop', m);
+      if (g.hex) return wrap('t-num', m);
+      if (g.num) return wrap('t-num', m);
+      return m;
+    });
+  }
+
+  function lines(id) {
+    var t = document.getElementById(id).textContent;
+    if (t.charAt(0) === '\n') t = t.slice(1);
+    if (t.charAt(t.length - 1) === '\n') t = t.slice(0, -1);
+    return t.split('\n');
+  }
+
+  /* ---------- build code panels ---------- */
+  var FILES = [
+    { key: 'serverjs', hl: hlJS },
+    { key: 'css', hl: hlCSS }
+  ];
+
+  FILES.forEach(function (f) {
+    var src = lines('src-' + f.key);
+    var zh = lines('zh-' + f.key);
+
+    if (src.length !== zh.length) {
+      console.warn('[review] line-count mismatch for ' + f.key + ': src=' + src.length + ' zh=' + zh.length);
+      while (zh.length < src.length) zh.push('');
+      zh.length = src.length;
+    }
+    f.raw = src.join('\n') + '\n';
+
+    var html = '';
+    for (var i = 0; i < src.length; i++) {
+      var n = i + 1;
+      html += '<div class="row"><span class="ln">' + n + '</span><code class="lc">' +
+              (src[i] ? f.hl(src[i]) : ' ') + '</code></div>';
+      if (zh[i] && zh[i].trim() !== '') {
+        html += '<div class="row zh"><span class="ln">译</span><code class="zc">' +
+                esc(zh[i]) + '</code></div>';
+      }
+    }
+    document.getElementById('body-' + f.key).innerHTML = html;
+  });
+
+  function fileByKey(k) {
+    for (var i = 0; i < FILES.length; i++) if (FILES[i].key === k) return FILES[i];
+    return null;
+  }
+
+  /* ---------- tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+
+  function activate(target) {
+    tabs.forEach(function (t) {
+      t.setAttribute('aria-selected', String(t.dataset.target === target));
+    });
+    panels.forEach(function (p) {
+      p.classList.toggle('active', p.id === target);
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { activate(t.dataset.target); });
+  });
+
+  /* ---------- copy ---------- */
+  function copyText(text, btn, doneLabel) {
+    var finish = function (ok) {
+      if (!btn) return;
+      var old = btn.dataset.label || btn.textContent;
+      btn.dataset.label = old;
+      btn.textContent = ok ? '已复制 ✓' : '复制失败';
+      setTimeout(function () { btn.textContent = btn.dataset.label; }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { finish(true); },
+                                               function () { finish(false); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); finish(true); }
+      catch (e) { finish(false); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.copy[data-copy]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var f = fileByKey(btn.dataset.copy);
+      if (f) copyText(f.raw, btn);
+    });
+  });
+
+  document.getElementById('copy-all').addEventListener('click', function () {
+    var activePanel = document.querySelector('.panel.active');
+    var btn = this;
+    var map = { 'panel-serverjs': 'serverjs', 'panel-css': 'css' };
+    var key = map[activePanel && activePanel.id];
+    if (!key) { btn.textContent = '请先切换到代码页 / Switch to a code tab'; setTimeout(function(){ btn.textContent='复制当前文件 / Copy file'; }, 1600); return; }
+    copyText(fileByKey(key).raw, btn);
+  });
+
+  /* ---------- zh toggle ---------- */
+  var toggleBtn = document.getElementById('toggle-zh');
+  function setZh(on) {
+    document.body.classList.toggle('hide-zh', !on);
+    toggleBtn.setAttribute('aria-pressed', String(on));
+    toggleBtn.textContent = on ? '中文对照：开 / Chinese: ON' : '中文对照：关 / Chinese: OFF';
+    try { localStorage.setItem('quiz1-review-zh', on ? '1' : '0'); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('quiz1-review-zh'); } catch (e) {}
+  setZh(saved !== '0');
+  toggleBtn.addEventListener('click', function () {
+    setZh(document.body.classList.contains('hide-zh'));
+  });
+
+  /* ---------- print ---------- */
+  document.getElementById('print-btn').addEventListener('click', function () { window.print(); });
+})();
+</script>
+</body>
+</html>
